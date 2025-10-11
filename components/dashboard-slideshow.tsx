@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 
 const monitoringSlides = [
   {
-    image: "/satellite-view-of-agricultural-land-with-vegetatio.jpg",
+    image: "/real-time-land-monitoring-dashboard.jpg",
     title: "Real-Time Satellite Monitoring",
     description: "AI-powered analysis of vegetation health using NDVI indices from satellite imagery",
   },

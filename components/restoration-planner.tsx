@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Sparkles, MapPin, TrendingUp, DollarSign, Calendar, CheckCircle2, ExternalLink } from "lucide-react"
+import { Sparkles, MapPin, TrendingUp, DollarSign, Calendar, CheckCircle2, ExternalLink, Download } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { createClient } from "@/lib/supabase/client"
 import { useToast } from "@/hooks/use-toast"
@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
+import "jspdf"
 
 type Step = "select" | "analyze" | "recommend" | "plan" | "review"
 
@@ -80,6 +81,172 @@ export function RestorationPlanner() {
 
     fetchDegradedAreas()
   }, [])
+
+  const handleDownloadPlan = async () => {
+    const { jsPDF } = await import("jspdf")
+    const doc = new jsPDF()
+
+    const planData = {
+      projectName: projectName || `${selectedArea} Restoration`,
+      location: selectedArea,
+      regionId: selectedRegionId,
+      budget: `$${Number.parseInt(budget).toLocaleString()}`,
+      duration: `${duration} months`,
+      ndvi: selectedAreaData?.ndvi_value.toFixed(2) || "0.28",
+      soilHealth: `${selectedAreaData?.soil_health_score || 42}%`,
+      erosionRisk: selectedAreaData?.erosion_risk_level || "High",
+      successRate: `${selectedAreaData ? Math.round((selectedAreaData.ndvi_value || 0.3) * 100 + 20) : 82}%`,
+      notes: notes || "No additional notes",
+    }
+
+    // Title
+    doc.setFontSize(20)
+    doc.setFont("helvetica", "bold")
+    doc.text("RESTORATION PLAN SUMMARY", 105, 20, { align: "center" })
+
+    // Project Information
+    doc.setFontSize(14)
+    doc.setFont("helvetica", "bold")
+    doc.text("Project Information", 20, 40)
+
+    doc.setFontSize(10)
+    doc.setFont("helvetica", "normal")
+    let yPos = 50
+    doc.text(`Project Name: ${planData.projectName}`, 20, yPos)
+    yPos += 7
+    doc.text(`Location: ${planData.location}`, 20, yPos)
+    yPos += 7
+    doc.text(`Region ID: ${planData.regionId}`, 20, yPos)
+    yPos += 7
+    doc.text(`Total Budget: ${planData.budget}`, 20, yPos)
+    yPos += 7
+    doc.text(`Duration: ${planData.duration}`, 20, yPos)
+    yPos += 7
+    doc.text(`Projected Success Rate: ${planData.successRate}`, 20, yPos)
+
+    // Environmental Context
+    yPos += 15
+    doc.setFontSize(14)
+    doc.setFont("helvetica", "bold")
+    doc.text("Environmental Context", 20, yPos)
+
+    yPos += 10
+    doc.setFontSize(10)
+    doc.setFont("helvetica", "normal")
+    doc.text(`Vegetation Health (NDVI): ${planData.ndvi}`, 20, yPos)
+    yPos += 7
+    doc.text(`Soil Health: ${planData.soilHealth}`, 20, yPos)
+    yPos += 7
+    doc.text(`Erosion Risk: ${planData.erosionRisk}`, 20, yPos)
+
+    // Recommended Species
+    yPos += 15
+    doc.setFontSize(14)
+    doc.setFont("helvetica", "bold")
+    doc.text("Recommended Native Plant Species", 20, yPos)
+
+    yPos += 10
+    doc.setFontSize(10)
+    doc.setFont("helvetica", "normal")
+    const species = [
+      "1. Acacia tortilis - Drought-resistant, nitrogen-fixing",
+      "2. Prosopis cineraria - Deep root system, erosion control",
+      "3. Ziziphus mauritiana - Hardy, provides ground cover",
+      "4. Salvadora persica - Salt-tolerant, fast-growing",
+    ]
+    species.forEach((s) => {
+      doc.text(s, 20, yPos)
+      yPos += 7
+    })
+
+    // Soil Conservation Techniques
+    yPos += 10
+    doc.setFontSize(14)
+    doc.setFont("helvetica", "bold")
+    doc.text("Soil Conservation Techniques", 20, yPos)
+
+    yPos += 10
+    doc.setFontSize(10)
+    doc.setFont("helvetica", "normal")
+    const techniques = [
+      "1. Contour plowing to reduce water runoff",
+      "2. Mulching with organic matter to improve soil structure",
+      "3. Installation of check dams for erosion control",
+      "4. Terracing on slopes to prevent soil loss",
+    ]
+    techniques.forEach((t) => {
+      doc.text(t, 20, yPos)
+      yPos += 7
+    })
+
+    // Budget Breakdown - New Page
+    doc.addPage()
+    yPos = 20
+    doc.setFontSize(14)
+    doc.setFont("helvetica", "bold")
+    doc.text("Budget Breakdown", 20, yPos)
+
+    yPos += 10
+    doc.setFontSize(10)
+    doc.setFont("helvetica", "normal")
+    const budgetItems = [
+      "Plant Materials & Seeds: $150,000 (30%)",
+      "Labor & Implementation: $175,000 (35%)",
+      "Equipment & Tools: $75,000 (15%)",
+      "Monitoring & Maintenance: $75,000 (15%)",
+      "Contingency: $25,000 (5%)",
+    ]
+    budgetItems.forEach((item) => {
+      doc.text(item, 20, yPos)
+      yPos += 7
+    })
+
+    // Implementation Phases
+    yPos += 10
+    doc.setFontSize(14)
+    doc.setFont("helvetica", "bold")
+    doc.text("Implementation Phases", 20, yPos)
+
+    yPos += 10
+    doc.setFontSize(10)
+    doc.setFont("helvetica", "normal")
+    const phases = [
+      "Phase 1: Site Preparation - Months 1-3",
+      "Phase 2: Initial Planting - Months 4-8",
+      "Phase 3: Soil Conservation - Months 6-12",
+      "Phase 4: Monitoring & Maintenance - Months 12-24",
+    ]
+    phases.forEach((phase) => {
+      doc.text(phase, 20, yPos)
+      yPos += 7
+    })
+
+    // Additional Notes
+    yPos += 10
+    doc.setFontSize(14)
+    doc.setFont("helvetica", "bold")
+    doc.text("Additional Notes", 20, yPos)
+
+    yPos += 10
+    doc.setFontSize(10)
+    doc.setFont("helvetica", "normal")
+    const splitNotes = doc.splitTextToSize(planData.notes, 170)
+    doc.text(splitNotes, 20, yPos)
+
+    // Footer
+    yPos += splitNotes.length * 7 + 10
+    doc.setFontSize(8)
+    doc.setTextColor(128, 128, 128)
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 20, yPos)
+
+    // Save PDF
+    doc.save(`restoration-plan-${selectedArea.replace(/\s+/g, "-").toLowerCase()}-${Date.now()}.pdf`)
+
+    toast({
+      title: "Plan Downloaded",
+      description: "Your restoration plan has been downloaded as PDF",
+    })
+  }
 
   const handleSavePlan = async () => {
     setIsSaving(true)
@@ -636,6 +803,10 @@ export function RestorationPlanner() {
               <div className="flex gap-3">
                 <Button onClick={() => setCurrentStep("select")} variant="outline" className="flex-1">
                   Start New Plan
+                </Button>
+                <Button onClick={handleDownloadPlan} variant="secondary" className="flex-1">
+                  <Download className="h-4 w-4 mr-2" />
+                  Download Plan
                 </Button>
                 <Button onClick={handleSavePlan} className="flex-1" disabled={isSaving}>
                   {isSaving ? "Saving..." : "Save Restoration Plan"}

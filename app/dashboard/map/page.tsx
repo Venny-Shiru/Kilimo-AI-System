@@ -78,10 +78,8 @@ export default function MapPage() {
                 1
               </div>
               <div>
-                <p className="font-medium text-sm">Toggle Data Layers</p>
-                <p className="text-xs text-muted-foreground">
-                  Use the layers panel to show/hide different environmental data overlays
-                </p>
+                <p className="font-medium text-sm">Search Locations</p>
+                <p className="text-xs text-muted-foreground">Use the search button to find specific regions by name</p>
               </div>
             </div>
 
@@ -90,9 +88,9 @@ export default function MapPage() {
                 2
               </div>
               <div>
-                <p className="font-medium text-sm">Select Areas</p>
+                <p className="font-medium text-sm">View Area Details</p>
                 <p className="text-xs text-muted-foreground">
-                  Click on marked regions to view detailed environmental metrics
+                  Click on markers to view detailed environmental metrics and location info
                 </p>
               </div>
             </div>
@@ -102,9 +100,9 @@ export default function MapPage() {
                 3
               </div>
               <div>
-                <p className="font-medium text-sm">Zoom Controls</p>
+                <p className="font-medium text-sm">Toggle Data Layers</p>
                 <p className="text-xs text-muted-foreground">
-                  Use the +/- buttons in the bottom right to zoom in and out of the map
+                  Use the layers panel to show/hide different environmental data overlays
                 </p>
               </div>
             </div>
@@ -114,9 +112,9 @@ export default function MapPage() {
                 4
               </div>
               <div>
-                <p className="font-medium text-sm">Create Plans</p>
+                <p className="font-medium text-sm">Create Restoration Plans</p>
                 <p className="text-xs text-muted-foreground">
-                  Select an area and click "Create Restoration Plan" to start a new project
+                  Click on a marker and use "Create Plan" to start a new restoration project
                 </p>
               </div>
             </div>
@@ -124,10 +122,7 @@ export default function MapPage() {
         </CardContent>
       </Card>
 
-      {/* Map Viewer */}
-      <div className="h-[calc(100vh-32rem)] min-h-[500px]">
-        <MapViewer />
-      </div>
+      <MapViewer />
     </div>
   )
 }

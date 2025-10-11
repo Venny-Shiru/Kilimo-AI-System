@@ -1,6 +1,5 @@
 import type React from "react"
-import { DashboardSidebar } from "@/components/dashboard-sidebar"
-import { DashboardHeader } from "@/components/dashboard-header"
+import { DashboardNavbar } from "@/components/dashboard-navbar"
 import { DashboardFooter } from "@/components/dashboard-footer"
 
 export default function DashboardLayout({
@@ -9,13 +8,10 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex min-h-screen bg-background">
-      <DashboardSidebar />
-      <div className="flex-1 flex flex-col">
-        <DashboardHeader />
-        <main className="flex-1 p-6">{children}</main>
-        <DashboardFooter />
-      </div>
+    <div className="min-h-screen bg-background flex flex-col">
+      <DashboardNavbar />
+      <main className="flex-1 p-6">{children}</main>
+      <DashboardFooter />
     </div>
   )
 }
