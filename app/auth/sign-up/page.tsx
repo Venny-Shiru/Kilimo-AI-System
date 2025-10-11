@@ -77,7 +77,7 @@ export default function SignUpPage() {
           <div className="flex flex-col items-center gap-2 text-center">
             <div className="flex items-center gap-2">
               <Leaf className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-bold">Kilimo(Agri)protect AI</h1>
+              <h1 className="text-2xl font-bold">Kilimo AI</h1>
             </div>
             <p className="text-sm text-muted-foreground">Land Restoration & Monitoring Platform</p>
           </div>

@@ -13,7 +13,7 @@ export function DashboardFooter() {
                 <Leaf className="h-5 w-5 text-primary-foreground" />
               </div>
               <div>
-                <h3 className="font-bold text-foreground">Kilimo(Agri)protect AI</h3>
+                <h3 className="font-bold text-foreground">Kilimo AI</h3>
               </div>
             </div>
             <p className="text-sm text-muted-foreground">
@@ -123,9 +123,7 @@ export function DashboardFooter() {
 
         {/* Bottom Bar */}
         <div className="mt-8 pt-6 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Kilimo(Agri)protect AI. All rights reserved.
-          </p>
+          <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} Kilimo AI. All rights reserved.</p>
           <div className="flex gap-6 text-sm">
             <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
               Terms of Service

@@ -8,9 +8,12 @@ import { ThemeProvider } from "@/lib/theme-provider"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Kilimo(Agri)protect AI - Land Degradation Monitoring",
+  title: "Kilimo AI - Land Degradation Monitoring",
   description: "AI-powered platform for monitoring land degradation and planning restoration efforts",
   generator: "v0.app",
+  icons: {
+    icon: "/favicon.ico",
+  },
 }
 
 export default function RootLayout({

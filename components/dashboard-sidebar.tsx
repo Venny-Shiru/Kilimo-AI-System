@@ -41,7 +41,7 @@ export function DashboardSidebar() {
           </div>
           {!isCollapsed && (
             <>
-              <h2 className="text-lg font-bold text-foreground">Kilimo(Agri)protect AI</h2>
+              <h2 className="text-lg font-bold text-foreground">Kilimo AI</h2>
             </>
           )}
         </div>

@@ -91,7 +91,7 @@ export function DashboardNavbar() {
               <Leaf className="h-5 w-5 text-primary-foreground" />
             </div>
             <div className="hidden sm:block">
-              <h2 className="text-base font-bold text-foreground">Kilimo(Agri)protect AI</h2>
+              <h2 className="text-base font-bold text-foreground">Kilimo AI</h2>
               <p className="text-xs text-muted-foreground">Environmental Monitoring</p>
             </div>
           </div>
