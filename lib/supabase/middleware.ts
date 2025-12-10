@@ -25,8 +25,21 @@ export async function updateSession(request: NextRequest) {
     },
   )
 
-  // Refresh session if expired
-  await supabase.auth.getUser()
+  // Refresh session if expired, but do not block on slow Supabase responses.
+  // Only attempt refresh if a refresh token is present.
+  const refreshToken = request.cookies.get("sb-refresh-token")?.value
+  if (refreshToken) {
+    try {
+      // Race with a 5s timeout to prevent middleware from hanging
+      await Promise.race([
+        supabase.auth.getUser(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Session refresh timeout")), 5000)),
+      ])
+    } catch (err) {
+      // Log but do not throw; session refresh failure should not block page load
+      console.warn("Session refresh failed in middleware:", err instanceof Error ? err.message : String(err))
+    }
+  }
 
   return supabaseResponse
 }
