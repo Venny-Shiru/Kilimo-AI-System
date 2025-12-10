@@ -9,10 +9,20 @@ const data = [
   { region: "West", organic: 70, ph: 75, moisture: 65 },
 ]
 
-export function SoilHealthChart() {
+export function SoilHealthChart({ data: inputData }: { data?: any[] }) {
+  const chartData =
+    inputData && inputData.length
+      ? inputData.map((d) => ({
+          region: d.region_name || d.region || "Unknown",
+          organic: d.soil_health_score ?? d.organic ?? 0,
+          ph: d.ph ?? 0,
+          moisture: d.moisture ?? 0,
+        }))
+      : data
+
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={data}>
+      <BarChart data={chartData}>
         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
         <XAxis dataKey="region" className="text-xs" tick={{ fill: "hsl(var(--muted-foreground))" }} />
         <YAxis className="text-xs" tick={{ fill: "hsl(var(--muted-foreground))" }} />

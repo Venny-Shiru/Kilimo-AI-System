@@ -9,10 +9,15 @@ const data = [
   { name: "Western Range", value: 45, fill: "hsl(var(--chart-3))" },
 ]
 
-export function RegionalComparisonChart() {
+export function RegionalComparisonChart({ data: inputData }: { data?: any[] }) {
+  const chartData =
+    inputData && inputData.length
+      ? inputData.map((d) => ({ name: d.region_name || d.name || "Region", value: d.value ?? d.ndvi_value ?? 0, fill: d.fill }))
+      : data
+
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <RadialBarChart cx="50%" cy="50%" innerRadius="20%" outerRadius="90%" data={data} startAngle={90} endAngle={-270}>
+      <RadialBarChart cx="50%" cy="50%" innerRadius="20%" outerRadius="90%" data={chartData} startAngle={90} endAngle={-270}>
         <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
         <RadialBar
           background

@@ -10,10 +10,19 @@ const data = [
   { project: "Project E", before: 0.3, after: 0.65 },
 ]
 
-export function RestorationImpactChart() {
+export function RestorationImpactChart({ projects, envData }: { projects?: any[]; envData?: any[] }) {
+  const chartData =
+    projects && projects.length
+      ? projects.map((p) => ({
+          project: p.id || p.project || `Project ${p.id ?? ""}`,
+          before: (p.before_ndvi as number) ?? 0,
+          after: (p.after_ndvi as number) ?? (p.success_rate_estimate ? p.success_rate_estimate / 100 : 0),
+        }))
+      : data
+
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={data}>
+      <BarChart data={chartData}>
         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
         <XAxis dataKey="project" className="text-xs" tick={{ fill: "hsl(var(--muted-foreground))" }} />
         <YAxis className="text-xs" tick={{ fill: "hsl(var(--muted-foreground))" }} domain={[0, 1]} />

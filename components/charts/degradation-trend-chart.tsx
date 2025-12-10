@@ -11,10 +11,19 @@ const data = [
   { month: "Jun", degraded: 2340, restored: 800 },
 ]
 
-export function DegradationTrendChart() {
+export function DegradationTrendChart({ data: inputData }: { data?: any[] }) {
+  const chartData =
+    inputData && inputData.length
+      ? inputData.map((d, i) => ({
+          month: new Date(d.measurement_date || d.month || Date.now()).toLocaleString("en-US", { month: "short" }),
+          degraded: typeof d.degraded === "number" ? d.degraded : d.ndvi_value ?? 0,
+          restored: typeof d.restored === "number" ? d.restored : 0,
+        }))
+      : data
+
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={data}>
+      <LineChart data={chartData}>
         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
         <XAxis dataKey="month" className="text-xs" tick={{ fill: "hsl(var(--muted-foreground))" }} />
         <YAxis className="text-xs" tick={{ fill: "hsl(var(--muted-foreground))" }} />
