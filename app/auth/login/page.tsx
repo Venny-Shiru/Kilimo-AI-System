@@ -26,11 +26,21 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
+
       if (error) throw error
+
+      // In some auth configurations the user object may be missing immediately
+      // (e.g. when email confirmation is required). Check for a user and be defensive.
+      const signedInUser = data?.user
+      if (!signedInUser) {
+        setError("Login succeeded but no user returned. If you require email confirmation, check your inbox.")
+        return
+      }
+
       router.push("/dashboard")
       router.refresh()
     } catch (error: unknown) {

@@ -46,11 +46,21 @@ export default function SignUpPage() {
           },
         },
       })
+
       if (error) throw error
 
-      if (data.user) {
+      // Try to obtain the user after signUp (in some configs user may be null until
+      // email confirmation completes). Attempt to create a profile if we have an id.
+      let userId: string | undefined = data?.user?.id
+
+      if (!userId) {
+        const userResp = await supabase.auth.getUser()
+        userId = userResp.data.user?.id ?? undefined
+      }
+
+      if (userId) {
         const { error: profileError } = await supabase.from("profiles").insert({
-          id: data.user.id,
+          id: userId,
           email: email,
           full_name: fullName,
           organization: organization,
@@ -58,8 +68,12 @@ export default function SignUpPage() {
         })
 
         if (profileError) {
-          console.log("[v0] Profile creation error:", profileError)
+          console.warn("[v0] Profile creation error:", profileError)
         }
+      } else {
+        // If we can't create a profile now (e.g. email confirmation required),
+        // the profile can be created later by a server webhook or after sign-in.
+        console.info("[v0] No user id returned after signUp; profile creation deferred")
       }
 
       router.push("/auth/sign-up-success")
