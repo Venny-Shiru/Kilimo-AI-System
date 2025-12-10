@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server"
-import { createHmac, timingSafeEqual } from "crypto"
+import { createHmac } from "crypto"
+import { timingSafeEqual } from "crypto"
 import { createClient as createSupabaseClient } from "@supabase/supabase-js"
 
 export async function POST(req: Request) {
@@ -13,10 +14,18 @@ export async function POST(req: Request) {
 
       const hmac = createHmac("sha256", secret).update(bodyText).digest("hex")
 
-      // timingSafeEqual requires buffers of same length
-      const sigBuf = Buffer.from(signatureHeader, "utf8")
-      const hmacBuf = Buffer.from(hmac, "utf8")
-      if (sigBuf.length !== hmacBuf.length || !timingSafeEqual(sigBuf, hmacBuf)) {
+      // Compare signatures using timing-safe comparison
+      // Convert both to Uint8Array for timingSafeEqual
+      const sigBuf = new Uint8Array(Buffer.from(signatureHeader, "hex"))
+      const hmacBuf = new Uint8Array(Buffer.from(hmac, "hex"))
+      if (sigBuf.length !== hmacBuf.length) {
+        return new Response("Invalid signature", { status: 401 })
+      }
+      try {
+        if (!timingSafeEqual(sigBuf, hmacBuf)) {
+          return new Response("Invalid signature", { status: 401 })
+        }
+      } catch {
         return new Response("Invalid signature", { status: 401 })
       }
     }
