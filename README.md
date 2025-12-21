@@ -144,6 +144,72 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 # Optional: Webhook Signature Verification
 SUPABASE_WEBHOOK_SECRET=your-webhook-secret-here
 
+# (Optional) Demo account credentials (for local development)
+# Use these to enable the "Use demo account" button on the login page.
+NEXT_PUBLIC_DEMO_EMAIL=demo@example.com
+NEXT_PUBLIC_DEMO_PASSWORD=demo-password
+# (Optional) Enable secure demo route (recommended for development only)
+# When enabled, the server-side demo route will use your SUPABASE_SERVICE_ROLE_KEY to create session cookies
+NEXT_PUBLIC_ALLOW_DEMO=true
+
+# Running tests
+# Install dev dependencies: pnpm install -D vitest
+# Run tests locally: pnpm test
+# The tests include a focused test for the secure demo endpoint at `tests/api/auth/demo.test.ts`
+
+# CI
+# A GitHub Actions workflow is included to run the test suite on each push and pull request: `.github/workflows/ci-tests.yml`.
+# It enables the demo route in CI via NEXT_PUBLIC_ALLOW_DEMO=true so the demo tests can run without additional secrets.
+
+# Manual E2E checklist (run locally)
+1. Create a `.env.local` in the project root and add your Supabase creds + demo flags:
+
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+   SUPABASE_WEBHOOK_SECRET=your-webhook-secret
+   NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL=http://localhost:3000/dashboard
+   NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id
+   NEXT_PUBLIC_GOOGLE_CLIENT_SECRET=your-google-client-secret
+   NEXT_PUBLIC_DEMO_EMAIL=demo@example.com
+   NEXT_PUBLIC_DEMO_PASSWORD=demo-password
+   NEXT_PUBLIC_ALLOW_DEMO=true
+
+2. Start the dev server:
+   pnpm dev
+
+3. Confirm server is up:
+   curl -i http://localhost:3000/api/health
+   # Expect 200 and body {"status":"ok"}
+
+4. Demo sign-in (server-side):
+   curl -i -X POST http://localhost:3000/api/auth/demo
+   # If SUPABASE_SERVICE_ROLE_KEY is set and demo creds exist, this should return 200 and set session cookies.
+   # If keys are missing you'll see a helpful error message and 500/403 status.
+
+Playwright E2E tests:
+- Run locally: `pnpm test:e2e` (this will start a server if none running)
+- CI: `.github/workflows/e2e-tests.yml` will run the E2E suite on push/PR. Add repository secrets for `SUPABASE_SERVICE_ROLE_KEY`, `DEMO_EMAIL`, and `DEMO_PASSWORD` to allow the demo sign-in test to fully pass in CI.
+
+Signup & confirmation E2E:
+- A test-only endpoint exists at `/api/auth/confirm-user` which marks a user confirmed using the Supabase service role key (only enabled in development or when `NEXT_PUBLIC_ALLOW_DEMO=true`). The Playwright E2E will call this endpoint to confirm the test user and then verify sign-in works. If the endpoint is not available the test will skip the confirmation assertion and instead verify the app shows the expected confirmation-related UI and "send sign-in link" behavior.
+
+5. Sign-up and confirmation flow:
+   - Go to http://localhost:3000/auth/sign-up and create a new account.
+   - Check your email for confirmation link (or use Supabase console to set user as confirmed).
+   - If unconfirmed, try Login and use the "Send sign-in link" button when prompted.
+
+6. Google OAuth:
+   - Configure Google provider in Supabase Auth settings (use redirect URL from step 1).
+   - Click "Continue with Google" on Sign-up or Login and complete OAuth flow.
+
+If you'd like, I can add a small Playwright script to automate steps 3–4 and add it to CI as an optional E2E job.
+
+# Google OAuth (Configure in Supabase and add provider in Auth Settings)
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id
+NEXT_PUBLIC_GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+
 # Optional: Redirect URL after signup (defaults to /dashboard)
 NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL=http://localhost:3000/dashboard
 ```

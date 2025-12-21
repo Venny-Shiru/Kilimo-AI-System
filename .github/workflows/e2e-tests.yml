@@ -1,0 +1,43 @@
+name: E2E - Playwright
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Enable pnpm (Corepack)
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm build
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        run: pnpm test:e2e
+        env:
+          NEXT_PUBLIC_ALLOW_DEMO: 'true'
+          # Optional: set these secrets in repository settings for a successful demo sign-in
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NEXT_PUBLIC_DEMO_EMAIL: ${{ secrets.DEMO_EMAIL }}
+          NEXT_PUBLIC_DEMO_PASSWORD: ${{ secrets.DEMO_PASSWORD }}

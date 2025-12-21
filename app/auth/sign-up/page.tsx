@@ -22,6 +22,25 @@ export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
+  const handleGoogleSignUp = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/dashboard`,
+        },
+      })
+      if (error) throw error
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to sign up with Google')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     const supabase = createClient()
@@ -101,6 +120,11 @@ export default function SignUpPage() {
               <CardDescription>Create a new account</CardDescription>
             </CardHeader>
             <CardContent>
+              <div className="mb-4 flex flex-col gap-3">
+                <Button variant="outline" className="w-full" onClick={handleGoogleSignUp} disabled={isLoading}>
+                  Continue with Google
+                </Button>
+              </div>
               <form onSubmit={handleSignUp}>
                 <div className="flex flex-col gap-6">
                   <div className="grid gap-2">

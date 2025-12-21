@@ -19,6 +19,72 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
+  const isEmailNotConfirmedError = (msg?: string) => typeof msg === 'string' && msg.toLowerCase().includes('confirm')
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/dashboard`,
+        },
+      })
+      if (error) throw error
+      // Supabase will redirect to Google; nothing else to do here
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to sign in with Google')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDemoSignIn = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      // Call secure server-side demo route which uses the service role key to create session cookies
+      const res = await fetch('/api/auth/demo', { method: 'POST' })
+      if (!res.ok) {
+        const text = await res.text().catch(() => res.statusText)
+        setError(text || 'Demo sign-in failed')
+        return
+      }
+
+      // On success the server attached Supabase auth cookies; navigate to dashboard
+      router.push('/dashboard')
+      router.refresh()
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Demo sign-in failed')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSendSignInLink = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      if (!email) {
+        setError('Enter your email to send a sign-in link')
+        return
+      }
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/dashboard` },
+      })
+      if (error) throw error
+      setError('Sign-in link sent — check your inbox.')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to send sign-in link')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     const supabase = createClient()
@@ -44,7 +110,11 @@ export default function LoginPage() {
       router.push("/dashboard")
       router.refresh()
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred")
+      if (isEmailNotConfirmedError(error instanceof Error ? error.message : undefined)) {
+        setError('Email not confirmed. Check your inbox for a confirmation link before signing in.')
+      } else {
+        setError(error instanceof Error ? error.message : 'An error occurred')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -67,6 +137,16 @@ export default function LoginPage() {
               <CardDescription>Enter your email below to login to your account</CardDescription>
             </CardHeader>
             <CardContent>
+              <div className="mb-4 flex flex-col gap-3">
+                <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading}>
+                  Continue with Google
+                </Button>
+                {process.env.NEXT_PUBLIC_DEMO_EMAIL && process.env.NEXT_PUBLIC_DEMO_PASSWORD && (
+                  <Button variant="secondary" className="w-full" onClick={handleDemoSignIn} disabled={isLoading}>
+                    Use demo account
+                  </Button>
+                )}
+              </div>
               <form onSubmit={handleLogin}>
                 <div className="flex flex-col gap-6">
                   <div className="grid gap-2">
@@ -90,7 +170,16 @@ export default function LoginPage() {
                       onChange={(e) => setPassword(e.target.value)}
                     />
                   </div>
-                  {error && <p className="text-sm text-red-500">{error}</p>}
+                  {error && (
+                    <div className="flex flex-col gap-2">
+                      <p className="text-sm text-red-500">{error}</p>
+                      {String(error).toLowerCase().includes('confirm') && (
+                        <Button variant="ghost" size="sm" onClick={handleSendSignInLink} disabled={isLoading}>
+                          Send sign-in link to my email
+                        </Button>
+                      )}
+                    </div>
+                  )}
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "Logging in..." : "Login"}
                   </Button>
