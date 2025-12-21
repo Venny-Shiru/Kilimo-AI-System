@@ -12,34 +12,16 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
+function isEmailNotConfirmedError(message?: string): boolean {
+  return message?.includes('Email not confirmed') || message?.includes('email_not_confirmed') || false
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-
-  const isEmailNotConfirmedError = (msg?: string) => typeof msg === 'string' && msg.toLowerCase().includes('confirm')
-
-  const handleGoogleSignIn = async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const supabase = createClient()
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/dashboard`,
-        },
-      })
-      if (error) throw error
-      // Supabase will redirect to Google; nothing else to do here
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to sign in with Google')
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   const handleDemoSignIn = async () => {
     setIsLoading(true)
@@ -58,28 +40,6 @@ export default function LoginPage() {
       router.refresh()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Demo sign-in failed')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleSendSignInLink = async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      if (!email) {
-        setError('Enter your email to send a sign-in link')
-        return
-      }
-      const supabase = createClient()
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/dashboard` },
-      })
-      if (error) throw error
-      setError('Sign-in link sent — check your inbox.')
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to send sign-in link')
     } finally {
       setIsLoading(false)
     }
@@ -111,7 +71,7 @@ export default function LoginPage() {
       router.refresh()
     } catch (error: unknown) {
       if (isEmailNotConfirmedError(error instanceof Error ? error.message : undefined)) {
-        setError('Email not confirmed. Check your inbox for a confirmation link before signing in.')
+        setError('Sign-in blocked by email confirmation policy. You can request a sign-in link or contact support.')
       } else {
         setError(error instanceof Error ? error.message : 'An error occurred')
       }
@@ -138,10 +98,7 @@ export default function LoginPage() {
             </CardHeader>
             <CardContent>
               <div className="mb-4 flex flex-col gap-3">
-                <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading}>
-                  Continue with Google
-                </Button>
-                {process.env.NEXT_PUBLIC_DEMO_EMAIL && process.env.NEXT_PUBLIC_DEMO_PASSWORD && (
+                {process.env.NEXT_PUBLIC_ALLOW_DEMO === 'true' && (
                   <Button variant="secondary" className="w-full" onClick={handleDemoSignIn} disabled={isLoading}>
                     Use demo account
                   </Button>
@@ -173,11 +130,6 @@ export default function LoginPage() {
                   {error && (
                     <div className="flex flex-col gap-2">
                       <p className="text-sm text-red-500">{error}</p>
-                      {String(error).toLowerCase().includes('confirm') && (
-                        <Button variant="ghost" size="sm" onClick={handleSendSignInLink} disabled={isLoading}>
-                          Send sign-in link to my email
-                        </Button>
-                      )}
                     </div>
                   )}
                   <Button type="submit" className="w-full" disabled={isLoading}>
